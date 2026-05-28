@@ -5,7 +5,7 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run web\"",
     "dev": "concurrently \"npm run server\" \"npm run web\"",
-    "build": "expo export --platform web --output-dir dist",
+    "build": "npx expo export --platform web --output-dir dist",
     "serve": "tsx server/index.ts",
     "server": "tsx watch server/index.ts",
     "mobile": "expo start",
