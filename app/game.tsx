@@ -16,7 +16,7 @@ export default function GameScreen() {
     );
   }
 
-  const { players, currentTurnIndex, lastPlayed, lastPlayUserId, playHistory } = room.gameState;
+  const { players, currentTurnIndex, lastPlayed, lastPlayUserId, playHistory, forcedRule } = room.gameState;
   const activePlayer = players[currentTurnIndex];
   const isMyTurn = activePlayer?.id === socket.id;
 
@@ -25,22 +25,23 @@ export default function GameScreen() {
 
   // Mapeo de palos a colores y emojis
   const suitMeta: Record<CardSuit, { emoji: string; color: string }> = {
-    H: { emoji: '♥', color: '#FF453A' }, // Hearts
-    D: { emoji: '♦', color: '#FF453A' }, // Diamonds
-    C: { emoji: '♣', color: '#FFF' },    // Clubs
-    S: { emoji: '♠', color: '#8E8E93' },  // Spades
+    H: { emoji: '♥', color: '#E8001C' }, // Hearts - rojo
+    D: { emoji: '♦', color: '#E8001C' }, // Diamonds - rojo
+    C: { emoji: '♣', color: '#000000' }, // Clubs - negro puro
+    S: { emoji: '♠', color: '#000000' }, // Spades - negro puro
   };
 
   const handleSelectCard = (card: Card) => {
+    const suitNames: Record<string, string> = { H: 'Corazones', D: 'Rombos', C: 'Tréboles', S: 'Picas' };
+    console.log(`Carta seleccionada: ${card.value} de ${suitNames[card.suit]} (${card.id})`);
     const exists = selectedCards.find(c => c.id === card.id);
     if (exists) {
       setSelectedCards(selectedCards.filter(c => c.id !== card.id));
     } else {
-      // Regla de Capitalista: Solo se pueden seleccionar cartas del mismo valor numerico para tirarlas juntas.
-      // Si ya hay seleccionada alguna carta, obligar a que la nueva tenga el mismo valor para evitar equivocaciones del jugador.
+      // Solo cartas del mismo valor. Máximo 4 (un cuarteto).
       if (selectedCards.length > 0 && selectedCards[0].value !== card.value) {
         setSelectedCards([card]);
-      } else {
+      } else if (selectedCards.length < 4) {
         setSelectedCards([...selectedCards, card]);
       }
     }
@@ -50,8 +51,13 @@ export default function GameScreen() {
     if (selectedCards.length === 0) return;
     
     // Validar si la jugada es válida
-    if (!isValidPlay(selectedCards, lastPlayed)) {
-      alert('La jugada no es válida sobre la mesa actual. Debes tirar el mismo número de cartas y de valor superior.');
+    if (!isValidPlay(selectedCards, lastPlayed, forcedRule)) {
+      const msg = forcedRule === 'seven'
+        ? 'Regla del 7: debes jugar un 7 u 8.'
+        : forcedRule === 'eight'
+        ? 'Regla del 8: debes jugar igual o menor.'
+        : 'Jugada no válida. Debes tirar el mismo número de cartas y de valor superior.';
+      alert(msg);
       return;
     }
 
@@ -130,7 +136,8 @@ export default function GameScreen() {
             >
               {playHistory.map((entry: PlayHistoryEntry, i: number) => {
                 const suitColors: Record<string, string> = {
-                  H: '#FF453A', D: '#FF453A', C: '#FFF', S: '#AEAEB2'
+                  H: '#FF453A', D: '#FF6060',  // rojos sobre fondo oscuro
+                  C: '#E5E5EA', S: '#E5E5EA'   // blanco/gris claro sobre fondo oscuro
                 };
                 const suitEmojis: Record<string, string> = {
                   H: '♥', D: '♦', C: '♣', S: '♠'

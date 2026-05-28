@@ -9,11 +9,8 @@ const CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export function generateRoomCode(): string {
   let code = '';
   do {
-    code = '';
-    for (let i = 0; i < 6; i++) {
-      code += CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
-    }
-  } while (rooms[code]); // Re-generar si de casualidad ya existe un lobby activo con ese código
+    code = CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
+  } while (rooms[code]);
   return code;
 }
 
