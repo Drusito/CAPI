@@ -141,9 +141,6 @@ export default function GameScreen() {
 
           {/* CABECERA */}
           <View style={styles.header}>
-            <Text style={styles.turnLabel} numberOfLines={1}>
-              {isMyTurn ? '⭐ ¡TU TURNO!' : `↪ ${activePlayer?.name ?? '...'}`}
-            </Text>
             <TouchableOpacity onPress={leaveRoom} style={styles.btnExit}>
               <Text style={styles.btnExitText}>Salir</Text>
             </TouchableOpacity>
@@ -228,11 +225,7 @@ export default function GameScreen() {
               </ScrollView>
             )}
 
-            {!isMyTurn && !localPlayer?.hasPassed && (
-              <View style={styles.waitNotice}>
-                <Text style={styles.waitNoticeText}>Turno de {activePlayer?.name}...</Text>
-              </View>
-            )}
+
           </View>
 
           {/* CONTROLES */}
