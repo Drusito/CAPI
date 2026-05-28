@@ -5,7 +5,7 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run web\"",
     "dev": "concurrently \"npm run server\" \"npm run web\"",
-    "build": "npx expo export --platform web --output-dir dist",
+    "build": "npm install --legacy-peer-deps && npx expo export --platform web --output-dir dist",
     "serve": "tsx server/index.ts",
     "server": "tsx watch server/index.ts",
     "mobile": "expo start",
@@ -14,6 +14,7 @@
     "web": "expo start --web --port 3000"
   },
   "dependencies": {
+    "@expo/metro-runtime": "^56.0.13",
     "cors": "^2.8.5",
     "crypto-browserify": "^3.12.1",
     "expo": "~51.0.0",
