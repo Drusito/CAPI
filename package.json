@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run web\"",
     "dev": "concurrently \"npm run server\" \"npm run web\"",
     "server": "tsx watch server/index.ts",
     "mobile": "expo start",
