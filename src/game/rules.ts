@@ -65,3 +65,27 @@ export function isValidPlay(
   // Regla normal: mayor o igual (igual = válido + salta turno, gestionado en engine)
   return incomingPower >= tablePower;
 }
+
+/**
+ * Comprueba si un jugador tiene al menos una jugada válida disponible.
+ */
+export function playerCanPlay(
+  playerCards: Card[],
+  lastPlayed: Card[],
+  forcedRule: 'seven' | 'eight' | null
+): boolean {
+  if (lastPlayed.length === 0) return true;
+  if (playerCards.some(c => c.value === '2' && c.suit === 'H')) return true;
+
+  const byValue: Record<string, Card[]> = {};
+  for (const card of playerCards) {
+    if (!byValue[card.value]) byValue[card.value] = [];
+    byValue[card.value].push(card);
+  }
+
+  return Object.values(byValue).some(cards => {
+    const subset = cards.slice(0, lastPlayed.length);
+    if (subset.length < lastPlayed.length) return false;
+    return isValidPlay(subset, lastPlayed, forcedRule);
+  });
+}

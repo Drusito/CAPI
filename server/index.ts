@@ -7,7 +7,7 @@ import fs from 'fs';
 import { setupSocketHandlers } from './socket';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = (process.env as Record<string, string>)['PORT'] || 3001;
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 const IS_PROD = fs.existsSync(DIST_DIR);
 

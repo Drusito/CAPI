@@ -1,6 +1,6 @@
 import { GameState, Player, Card, PlayerRole, Room } from './types';
 import { createDeck, shuffleDeck, getCardPower } from './deck';
-import { isValidPlay, isTwoHearts } from './rules';
+import { isValidPlay, isTwoHearts, playerCanPlay } from './rules';
 
 /**
  * Inicializa y reparte las cartas para una nueva partida del juego "Capitalista"
@@ -54,6 +54,32 @@ export function initGame(players: Player[]): GameState {
 }
 
 /**
+ * Si el jugador activo no puede jugar ninguna carta válida, lo pasa automáticamente.
+ */
+function autoSkipIfNeeded(gameState: GameState, visited = new Set<number>()): void {
+  if (gameState.lastPlayed.length === 0) return;
+  if (gameState.status !== 'playing') return;
+  const idx = gameState.currentTurnIndex;
+  if (visited.has(idx)) {
+    gameState.lastPlayed = [];
+    gameState.lastPlayUserId = null;
+    gameState.forcedRule = null;
+    for (const p of gameState.players) {
+      if (p.cards.length > 0) p.hasPassed = false;
+    }
+    return;
+  }
+  const current = gameState.players[idx];
+  if (!current || current.cards.length === 0) return;
+  if (!playerCanPlay(current.cards, gameState.lastPlayed, gameState.forcedRule)) {
+    current.hasPassed = true;
+    visited.add(idx);
+    advanceTurn(gameState);
+    autoSkipIfNeeded(gameState, visited);
+  }
+}
+
+/**
  * Pasa el turno al siguiente jugador elegible.
  * Un jugador es elegible si:
  * 1. Tiene cartas (no ha terminado).
@@ -90,6 +116,7 @@ export function advanceTurn(gameState: GameState): GameState {
     }
     
     gameState.currentTurnIndex = findNextActivePlayerIndex(players, targetIndex);
+    autoSkipIfNeeded(gameState);
     return gameState;
   }
 
@@ -100,6 +127,7 @@ export function advanceTurn(gameState: GameState): GameState {
     const p = players[nextIdx];
     if (p.cards.length > 0 && !p.hasPassed) {
       gameState.currentTurnIndex = nextIdx;
+      autoSkipIfNeeded(gameState);
       return gameState;
     }
     nextIdx = (nextIdx + 1) % numPlayers;
@@ -114,6 +142,8 @@ export function advanceTurn(gameState: GameState): GameState {
     if (p.cards.length > 0) p.hasPassed = false;
   }
   gameState.currentTurnIndex = findNextActivePlayerIndex(players, currentTurnIndex);
+
+  autoSkipIfNeeded(gameState);
   return gameState;
 }
 
@@ -214,19 +244,15 @@ export function playTurn(gameState: GameState, playerId: string, cardsToPlay: Ca
   // Avanzar turno
   advanceTurn(gameState);
 
-  // REGLA DEL MISMO NÚMERO: si la jugada empataba con la mesa, saltar un jugador adicional
+  // REGLA DEL MISMO NÚMERO: el jugador al que le tocaba después queda saltado.
+  // Marcamos a ese jugador como que ha pasado y volvemos a llamar a advanceTurn
+  // para que gestione correctamente el fin de ronda (incluido el caso de 2 jugadores).
   if (isSameValue) {
-    const skippedIdx = gameState.currentTurnIndex;
-    const players = gameState.players;
-    let afterSkipped = (skippedIdx + 1) % players.length;
-    let loops = 0;
-    while (loops < players.length) {
-      if (players[afterSkipped].cards.length > 0 && !players[afterSkipped].hasPassed) {
-        gameState.currentTurnIndex = afterSkipped;
-        break;
-      }
-      afterSkipped = (afterSkipped + 1) % players.length;
-      loops++;
+    const toSkipIdx = gameState.currentTurnIndex;
+    const skipped = gameState.players[toSkipIdx];
+    if (skipped && skipped.cards.length > 0) {
+      skipped.hasPassed = true;
+      advanceTurn(gameState);
     }
   }
 

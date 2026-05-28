@@ -6,7 +6,8 @@ import { router } from 'expo-router';
 // En producción (Render) conectamos al mismo origen donde está servida la app.
 // En desarrollo local usamos el servidor en puerto 3001.
 function getServerUrl(): string {
-  if (process.env.EXPO_PUBLIC_SERVER_URL) return process.env.EXPO_PUBLIC_SERVER_URL;
+  const env = process.env as Record<string, string | undefined>;
+  if (env['EXPO_PUBLIC_SERVER_URL']) return env['EXPO_PUBLIC_SERVER_URL']!;
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     return window.location.origin;
   }
