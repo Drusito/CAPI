@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useGameStore } from '../src/stores/useGameStore';
 import { Card, CardSuit, PlayHistoryEntry } from '../src/game/types';
 import { isValidPlay } from '../src/game/rules';
@@ -7,11 +8,19 @@ import { isValidPlay } from '../src/game/rules';
 export default function GameScreen() {
   const { room, socket, playCards, passTurn, leaveRoom } = useGameStore();
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!room || !socket) {
+      const t = setTimeout(() => router.replace('/'), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [room, socket]);
 
   if (!room || !socket) {
     return (
       <View style={styles.fullContainer}>
-        <Text style={styles.infoText}>Conexión perdida con la sala...</Text>
+        <Text style={styles.infoText}>Sala no disponible. Volviendo al menú...</Text>
       </View>
     );
   }
