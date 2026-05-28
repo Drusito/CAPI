@@ -5,11 +5,13 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run web\"",
     "dev": "concurrently \"npm run server\" \"npm run web\"",
+    "build": "expo export --platform web --output-dir dist",
+    "serve": "tsx server/index.ts",
     "server": "tsx watch server/index.ts",
     "mobile": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web --port 3000"
   },
   "dependencies": {
     "cors": "^2.8.5",

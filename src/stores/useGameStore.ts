@@ -3,8 +3,16 @@ import { io, Socket } from 'socket.io-client';
 import { Room, Card, Player } from '../game/types';
 import { router } from 'expo-router';
 
-// URL del servidor (Cambia a la URL de Render para producción)
-const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL || 'http://localhost:3000';
+// En producción (Render) conectamos al mismo origen donde está servida la app.
+// En desarrollo local usamos el servidor en puerto 3001.
+function getServerUrl(): string {
+  if (process.env.EXPO_PUBLIC_SERVER_URL) return process.env.EXPO_PUBLIC_SERVER_URL;
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return window.location.origin;
+  }
+  return 'http://localhost:3001';
+}
+const SERVER_URL = getServerUrl();
 
 interface GameStore {
   socket: Socket | null;
